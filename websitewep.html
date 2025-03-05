@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gun Crafting Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        select, input, button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #333;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            padding-left: 20px;
+        }
+        .attachments {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .attachments label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 15px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .attachments label:hover {
+            background-color: #0056b3;
+        }
+        .attachments input {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .material-list {
+            margin-top: 10px;
+        }
+        .material-list h4 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gun Crafting Calculator</h1>
+
+        <!-- Gun Selection -->
+        <div class="section">
+            <select id="gunSelect">
+                <option value="" disabled selected>Select a gun</option>
+                <option value="P50">P50</option>
+                <option value="Pistol Mk2">Pistol Mk2</option>
+                <option value="Tec">Tec</option>
+                <option value="Micro">Micro</option>
+                <option value="Compact">Compact</option>
+                <option value="Gusenberg">Gusenberg</option>
+                <option value="Mk2">Mk2</option>
+                <option value="DB">DB</option>
+                <option value="Navy">Navy</option>
+            </select>
+        </div>
+
+        <!-- Attachments Section -->
+        <div id="attachments" class="attachments section hidden">
+            <h3>Attachments:</h3>
+            <!-- Attachments will be dynamically added here -->
+        </div>
+
+        <!-- Quantity Input -->
+        <div class="section">
+            <input type="number" id="quantity" placeholder="Number of guns to craft" min="1">
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="result hidden">
+            <h3>Weapon Materials:</h3>
+            <div class="material-list">
+                <p>Teava: <span id="teavaResult">0</span></p>
+                <p>Cadru: <span id="cadruResult">0</span></p>
+                <p>Mecanism: <span id="mecanismResult">0</span></p>
+                <p>Elemente Fixare: <span id="elementFixareResult">0</span></p>
+                <p>Dirty Money: <span id="dirtyMoneyResult">0</span></p>
+                <p>Total Otel for Weapon: <span id="totalOtelWeapon">0</span></p>
+            </div>
+
+            <h3>Attachments Materials:</h3>
+            <div class="material-list">
+                <p id="elementFixareAttachments">Elemente Fixare: <span>0</span></p>
+                <p id="otelAttachments">Otel Needed: <span>0</span></p>
+                <p id="cauciucAttachments">Cauciuc: <span>0</span></p>
+                <p id="arcuriAttachments">Arcuri: <span>0</span></p>
+                <p id="lupaAttachments">Lupa: <span>0</span></p>
+                <p id="becAttachments">Bec: <span>0</span></p>
+                <p>Total Otel for Attachments: <span id="totalOtelAttachments">0</span></p>
+            </div>
+
+            <h3>Total Otel for Everything:</h3>
+            <div class="material-list">
+                <p>Total Otel (Weapon + Attachments): <span id="totalOtelEverything">0</span></p>
+            </div>
+        </div>
+
+        <!-- Calculate Button -->
+        <div class="section">
+            <button onclick="calculateMaterials()">Calculate</button>
+        </div>
+    </div>
+
+    <script>
+        // Gun data
+        const gunData = {
+            "P50": {
+                cadru: 1, teava: 1, mecanism: 1, elementFixare: 3, dirtyMoney: 39000,
+                attachments: {
+                    "Extend": { arcuri: 5, otel: 1, elementFixare: 2 },
+                    "Suppressor": { cauciuc: 3, otel: 1, elementFixare: 2 }
+                }
+            },
+            "Pistol Mk2": {
+                cadru: 1, teava: 1, mecanism: 1, elementFixare: 3, dirtyMoney: 32500,
+                attachments: {
+                    "Extend": { arcuri: 5, otel: 1, elementFixare: 3 },
+                    "Suppressor": { cauciuc: 3, otel: 1, elementFixare: 3 },
+                    "Scope": { lupa: 2, otel: 1, elementFixare: 1 },
+                    "Compensator": { otel: 1, elementFixare: 1 }
+                }
+            },
+            "Tec": {
+                cadru: 1, teava: 1, mecanism: 1, elementFixare: 5, dirtyMoney: 97500,
+                attachments: {
+                    "Extend": { arcuri: 5, otel: 1, elementFixare: 3 },
+                    "Suppressor": { cauciuc: 3, otel: 1, elementFixare: 3 }
+                }
+            },
+            "Micro": {
+                cadru: 1, teava: 1, mecanism: 1, elementFixare: 3, dirtyMoney: 39000,
+                attachments: {
+                    "Extend": { arcuri: 5, otel: 1, elementFixare: 2 },
+                    "Suppressor": { cauciuc: 3, otel: 1, elementFixare: 2 },
+                    "Scope": { lupa: 2, otel: 1, elementFixare: 1 }
+                }
+            },
+            "Mk2": {
+                cadru: 1, teava: 1, mecanism: 1, elementFixare: 10, dirtyMoney: 65000,
+                attachments: {
+                    "Extend": { arcuri: 8, otel: 1, elementFixare: 8 },
+                    "Suppressor": { cauciuc: 3, otel: 1, elementFixare: 2 },
+                    "Small Scope": { lupa: 2, bec: 1, otel: 1, elementFixare: 2 },
+                    "Large Scope": { lupa: 2, otel: 1, bec: 1, elementFixare: 2 },
+                    "Grip": { cauciuc: 2 },
+                    "Heavy Barrel": { otel: 2, elementFixare: 2 },
+                    "Holographic": { elementFixare: 2, otel: 1, bec: 1, lupa: 2 }
+                }
+            },
+            "Compact": { cadru: 1, teava: 1, mecanism: 1, elementFixare: 12, dirtyMoney: 117000 },
+            "Gusenberg": { cadru: 1, teava: 1, mecanism: 1, elementFixare: 13, dirtyMoney: 162500 },
+            "DB": { cadru: 1, teava: 1, mecanism: 1, elementFixare: 9, dirtyMoney: 130000 },
+            "Navy": { cadru: 1, teava: 1, mecanism: 1, elementFixare: 15, dirtyMoney: 195000 }
+        };
+
+        // Function to calculate materials
+        function calculateMaterials() {
+            const gunSelect = document.getElementById("gunSelect");
+            const quantityInput = document.getElementById("quantity");
+            const selectedGun = gunSelect.value;
+            const quantity = parseInt(quantityInput.value);
+
+            if (!selectedGun) {
+                alert("Please select a gun.");
+                return;
+            }
+            if (isNaN(quantity) || quantity < 1) {
+                alert("Please enter a valid quantity.");
+                return;
+            }
+
+            const gun = gunData[selectedGun];
+
+            // Calculate weapon materials
+            const totalCadru = gun.cadru * quantity;
+            const totalTeava = gun.teava * quantity;
+            const totalMecanism = gun.mecanism * quantity;
+            const totalElementFixare = gun.elementFixare * quantity;
+            const totalDirtyMoney = gun.dirtyMoney * quantity;
+
+            // Calculate total otel for weapon
+            const otelForWeapon = (gun.cadru + gun.teava + gun.mecanism) * quantity; // 1 otel for each
+            const otelForElementFixare = gun.elementFixare * 2 * quantity; // 2 otel for each element fixare
+            const totalOtelWeapon = otelForWeapon + otelForElementFixare;
+
+            // Display weapon materials
+            document.getElementById("cadruResult").innerText = totalCadru;
+            document.getElementById("teavaResult").innerText = totalTeava;
+            document.getElementById("mecanismResult").innerText = totalMecanism;
+            document.getElementById("elementFixareResult").innerText = totalElementFixare;
+            document.getElementById("dirtyMoneyResult").innerText = totalDirtyMoney.toLocaleString();
+            document.getElementById("totalOtelWeapon").innerText = totalOtelWeapon;
+
+            // Calculate attachment materials
+            const attachmentMaterials = {
+                elementFixare: 0,
+                otel: 0,
+                cauciuc: 0,
+                arcuri: 0,
+                lupa: 0,
+                bec: 0
+            };
+
+            if (gun.attachments) {
+                const attachmentCheckboxes = document.querySelectorAll("#attachments input[type='checkbox']:checked");
+                attachmentCheckboxes.forEach(checkbox => {
+                    const attachment = gun.attachments[checkbox.value];
+                    for (const material in attachment) {
+                        attachmentMaterials[material] += attachment[material] * quantity;
+                    }
+                });
+            }
+
+            // Calculate total otel for attachments (including 2 otel per element fixare)
+            const otelForAttachmentsElementFixare = attachmentMaterials.elementFixare * 2; // 2 otel per element fixare
+            const totalOtelAttachments = attachmentMaterials.otel + otelForAttachmentsElementFixare;
+
+            // Calculate total otel for everything (weapon + attachments)
+            const totalOtelEverything = totalOtelWeapon + totalOtelAttachments;
+
+            // Display attachment materials (only if needed)
+            document.getElementById("elementFixareAttachments").style.display = attachmentMaterials.elementFixare > 0 ? "block" : "none";
+            document.getElementById("otelAttachments").style.display = attachmentMaterials.otel > 0 ? "block" : "none";
+            document.getElementById("cauciucAttachments").style.display = attachmentMaterials.cauciuc > 0 ? "block" : "none";
+            document.getElementById("arcuriAttachments").style.display = attachmentMaterials.arcuri > 0 ? "block" : "none";
+            document.getElementById("lupaAttachments").style.display = attachmentMaterials.lupa > 0 ? "block" : "none";
+            document.getElementById("becAttachments").style.display = attachmentMaterials.bec > 0 ? "block" : "none";
+
+            document.getElementById("elementFixareAttachments").querySelector("span").innerText = attachmentMaterials.elementFixare;
+            document.getElementById("otelAttachments").querySelector("span").innerText = attachmentMaterials.otel;
+            document.getElementById("cauciucAttachments").querySelector("span").innerText = attachmentMaterials.cauciuc;
+            document.getElementById("arcuriAttachments").querySelector("span").innerText = attachmentMaterials.arcuri;
+            document.getElementById("lupaAttachments").querySelector("span").innerText = attachmentMaterials.lupa;
+            document.getElementById("becAttachments").querySelector("span").innerText = attachmentMaterials.bec;
+
+            // Display total otel for attachments and everything
+            document.getElementById("totalOtelAttachments").innerText = totalOtelAttachments;
+            document.getElementById("totalOtelEverything").innerText = totalOtelEverything;
+
+            // Display results section
+            document.getElementById("results").classList.remove("hidden");
+        }
+
+        // Function to update attachments when a gun is selected
+        document.getElementById("gunSelect").addEventListener("change", function () {
+            const selectedGun = this.value;
+            const attachmentsDiv = document.getElementById("attachments");
+
+            if (!selectedGun) {
+                attachmentsDiv.classList.add("hidden");
+                return;
+            }
+
+            const gun = gunData[selectedGun];
+            attachmentsDiv.innerHTML = "<h3>Attachments:</h3>"; // Reset attachments
+
+            if (gun.attachments) {
+                for (const attachment in gun.attachments) {
+                    const label = document.createElement("label");
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.name = "attachment";
+                    checkbox.value = attachment;
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(attachment));
+                    attachmentsDiv.appendChild(label);
+                }
+            }
+
+            // Display attachments section
+            attachmentsDiv.classList.remove("hidden");
+        });
+    </script>
+</body>
+</html>
